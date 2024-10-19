@@ -6,13 +6,15 @@ https://arxiv.org/abs/2210.03057 reference: https://github.com/google-research/u
 """
 
 import re
+import pandas as pd
 from typing import Optional
 
 import blobfile as bf
 
-from . import common
-from .mmlu_eval import HTML_JINJA
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+
+import common
+from mmlu_eval import HTML_JINJA
+from our_types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 ALL_LANGUAGES = ["bn", "de", "en", "es", "fr", "ja", "ru", "sw", "te", "th", "zh"]
 LATIN_LANGUAGES = ["de", "en", "es", "fr", "sw"]
@@ -108,14 +110,17 @@ def score_mgsm(target: str, prediction: str) -> bool:
 
 def get_lang_examples(lang: str) -> list[dict[str, str]]:
     fpath = LANG_TO_FPATH[lang]
-    examples = []
-    with bf.BlobFile(fpath, "r") as f:
-        for line in f:
-            inputs, targets = line.strip().split("\t")
-            if "." in targets:
-                raise ValueError(f"targets {targets} contains a decimal point.")
-            # targets = int(targets.replace(",", ""))
-            examples.append({"inputs": inputs, "targets": targets, "lang": lang})
+    
+    # Read the TSV file from the URL
+    df = pd.read_csv(fpath, sep='\t', header=None, names=['inputs', 'targets'])
+    
+    # Check for decimal points in targets
+    if df['targets'].astype(str).str.contains('\.').any():
+        raise ValueError(f"Some targets contain a decimal point.")
+    
+    # Convert DataFrame to list of dictionaries
+    examples = df.assign(lang=lang).to_dict('records')
+    
     return examples
 
 

@@ -10,8 +10,8 @@ import re
 import blobfile as bf
 import pandas
 
-from . import common
-from .common import (
+import common
+from common import (
     HTML_JINJA,
     MULTILINGUAL_ANSWER_PATTERN_TEMPLATE,
     MULTILINGUAL_ANSWER_REGEXES,
@@ -19,7 +19,7 @@ from .common import (
     normalize_extracted_answer,
     normalize_response,
 )
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from our_types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 subject2category = {
     "abstract_algebra": "stem",
